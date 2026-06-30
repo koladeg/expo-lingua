@@ -1,8 +1,10 @@
 import { images } from '@/constants/images';
 import { Image } from 'expo-image';
-import { Link } from 'expo-router';
+import { Link, type Href } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+
+const signUpHref = '/sign-up' as Href;
 
 export default function OnboardingScreen() {
   return (
@@ -66,7 +68,7 @@ export default function OnboardingScreen() {
           </View>
 
           <View className="mt-auto pt-4">
-            <Link href="/" asChild>
+            <Link href={signUpHref} asChild>
               <Pressable style={styles.button}>
                 <Text className="font-lingua-semibold text-[24px] leading-[30px] text-white">
                   Get Started
