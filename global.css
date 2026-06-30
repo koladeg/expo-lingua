@@ -1,0 +1,129 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+
+@import "nativewind/theme";
+
+@theme {
+  --color-lingua-purple: #6C4EF5;
+  --color-lingua-deep-purple: #5B3BF6;
+  --color-lingua-blue: #4D8BFF;
+  --color-lingua-green: #21C16B;
+  --color-lingua-success: #21C16B;
+  --color-lingua-warning: #FFC800;
+  --color-lingua-streak: #FF8A00;
+  --color-lingua-error: #FF4D4F;
+  --color-lingua-info: #4D8BFF;
+  --color-lingua-text-primary: #0D132B;
+  --color-lingua-text-secondary: #6B7280;
+  --color-lingua-border: #E5E7EB;
+  --color-lingua-surface: #F6F7FB;
+  --color-lingua-background: #FFFFFF;
+
+  --font-sans: Poppins-Regular;
+  --font-lingua-regular: Poppins-Regular;
+  --font-lingua-medium: Poppins-Medium;
+  --font-lingua-semibold: Poppins-SemiBold;
+  --font-lingua-bold: Poppins-Bold;
+
+  --radius-lingua-sm: 8px;
+  --radius-lingua-md: 12px;
+  --radius-lingua-lg: 16px;
+  --radius-lingua-xl: 20px;
+}
+
+@layer base {
+  * {
+    font-family: Poppins-Regular;
+    letter-spacing: 0;
+  }
+}
+
+@layer utilities {
+  .screen {
+    background-color: #FFFFFF;
+  }
+
+  .card {
+    background-color: #FFFFFF;
+    border-color: #E5E7EB;
+    border-width: 1px;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(13, 19, 43, 0.08);
+  }
+
+  .surface {
+    background-color: #F6F7FB;
+    border-radius: 16px;
+  }
+
+  .h1 {
+    color: #0D132B;
+    font-family: Poppins-Bold;
+    font-size: 32px;
+    line-height: 38.4px;
+  }
+
+  .h2 {
+    color: #0D132B;
+    font-family: Poppins-SemiBold;
+    font-size: 24px;
+    line-height: 31.2px;
+  }
+
+  .h3 {
+    color: #0D132B;
+    font-family: Poppins-SemiBold;
+    font-size: 20px;
+    line-height: 26px;
+  }
+
+  .h4 {
+    color: #0D132B;
+    font-family: Poppins-Medium;
+    font-size: 16px;
+    line-height: 22.4px;
+  }
+
+  .body-large {
+    color: #0D132B;
+    font-family: Poppins-Regular;
+    font-size: 16px;
+    line-height: 25.6px;
+  }
+
+  .body-medium {
+    color: #0D132B;
+    font-family: Poppins-Regular;
+    font-size: 14px;
+    line-height: 22.4px;
+  }
+
+  .body-small {
+    color: #6B7280;
+    font-family: Poppins-Regular;
+    font-size: 13px;
+    line-height: 20.8px;
+  }
+
+  .caption {
+    color: #6B7280;
+    font-family: Poppins-Regular;
+    font-size: 11px;
+    line-height: 15.4px;
+  }
+
+  .section-title {
+    color: #5B3BF6;
+    font-family: Poppins-Bold;
+    font-size: 18px;
+    line-height: 23.4px;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .divider {
+    background-color: #E5E7EB;
+    height: 1px;
+  }
+}
