@@ -5,7 +5,9 @@ import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { Link, type Href } from 'expo-router';
+
+const onboardingHref = '/onboarding' as Href;
 
 export default function HomeScreen() {
   return (
@@ -63,6 +65,15 @@ export default function HomeScreen() {
         <ThemedText>
           {`Tap the Explore tab to learn more about what's included in this starter app.`}
         </ThemedText>
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <Link href={onboardingHref}>
+          <Link.Trigger>
+            <ThemedText type="subtitle">Open Onboarding</ThemedText>
+          </Link.Trigger>
+          <Link.Preview />
+        </Link>
+        <ThemedText>View the new kola_lingo onboarding screen.</ThemedText>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
