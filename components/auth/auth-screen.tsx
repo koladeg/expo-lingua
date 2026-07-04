@@ -1,10 +1,12 @@
 import { images } from '@/constants/images';
+import { isClerkAPIResponseError, useAuth, useSignIn, useSignUp, useSSO } from '@clerk/expo';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { Link, router, type Href } from 'expo-router';
+import { Link, Redirect, router, type Href } from 'expo-router';
 import type { MutableRefObject } from 'react';
 import { useRef, useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Modal,
   Pressable,
@@ -19,6 +21,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const codeLength = 6;
 
 type AuthMode = 'sign-up' | 'sign-in';
+type SocialProvider = 'google' | 'facebook' | 'apple';
+type ActiveVerificationFlow = AuthMode | null;
 
 type AuthScreenProps = {
   mode: AuthMode;
@@ -52,21 +56,174 @@ const socialOptions = [
 ] as const;
 
 export function AuthScreen({ mode }: AuthScreenProps) {
+  const { isLoaded: isAuthLoaded, isSignedIn } = useAuth();
+  const { signIn, fetchStatus: signInFetchStatus } = useSignIn();
+  const { signUp, fetchStatus: signUpFetchStatus } = useSignUp();
+  const { startSSOFlow } = useSSO();
   const copy = authCopy[mode];
   const isSignUp = mode === 'sign-up';
   const [email, setEmail] = useState<string>(copy.email);
   const [password, setPassword] = useState<string>('password1');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [activeVerificationFlow, setActiveVerificationFlow] =
+    useState<ActiveVerificationFlow>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [code, setCode] = useState<string[]>(Array.from({ length: codeLength }, () => ''));
   const codeInputs = useRef<(TextInput | null)[]>([]);
+  const isFetching =
+    isSubmitting || signInFetchStatus === 'fetching' || signUpFetchStatus === 'fetching';
 
-  const openVerificationModal = () => {
+  if (isAuthLoaded && isSignedIn) {
+    return <Redirect href="/" />;
+  }
+
+  const openVerificationModal = (flow: AuthMode) => {
+    setActiveVerificationFlow(flow);
     setCode(Array.from({ length: codeLength }, () => ''));
     setIsModalVisible(true);
     setTimeout(() => {
       codeInputs.current[0]?.focus();
     }, 100);
+  };
+
+  const finishAuth = async (flow: AuthMode) => {
+    const resource = flow === 'sign-up' ? signUp : signIn;
+
+    if (!resource) {
+      throw new Error('Authentication is not ready yet.');
+    }
+
+    const { error } = await resource.finalize();
+
+    if (error) {
+      throw error;
+    }
+
+    setIsModalVisible(false);
+    router.replace('/');
+  };
+
+  const handlePrimaryPress = async () => {
+    if (!signIn || !signUp) {
+      return;
+    }
+
+    const emailAddress = email.trim();
+
+    if (!emailAddress) {
+      Alert.alert('Email required', 'Enter your email address to continue.');
+      return;
+    }
+
+    if (isSignUp && !password) {
+      Alert.alert('Password required', 'Enter a password to create your account.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      if (isSignUp) {
+        const { error } = await signUp.password({ emailAddress, password });
+
+        if (error) {
+          throw error;
+        }
+
+        if (signUp.status === 'complete') {
+          await finishAuth('sign-up');
+          return;
+        }
+
+        const verification = await signUp.verifications.sendEmailCode();
+
+        if (verification.error) {
+          throw verification.error;
+        }
+
+        openVerificationModal('sign-up');
+        return;
+      }
+
+      const { error } = await signIn.emailCode.sendCode({ emailAddress });
+
+      if (error) {
+        throw error;
+      }
+
+      openVerificationModal('sign-in');
+    } catch (error) {
+      showAuthError(error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerifyCode = async (verificationCode: string) => {
+    if (!signIn || !signUp || !activeVerificationFlow || verificationCode.length !== codeLength) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      if (activeVerificationFlow === 'sign-up') {
+        const { error } = await signUp.verifications.verifyEmailCode({
+          code: verificationCode,
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        await finishAuth('sign-up');
+        return;
+      }
+
+      const { error } = await signIn.emailCode.verifyCode({
+        code: verificationCode,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      await finishAuth('sign-in');
+    } catch (error) {
+      showAuthError(error);
+      setCode(Array.from({ length: codeLength }, () => ''));
+      codeInputs.current[0]?.focus();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSocialPress = async (provider: SocialProvider) => {
+    if (provider !== 'google') {
+      Alert.alert(
+        'Provider not enabled',
+        'This Clerk project currently supports Google social sign-in.',
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const { createdSessionId, setActive } = await startSSOFlow({
+        strategy: 'oauth_google',
+      });
+
+      if (createdSessionId && setActive) {
+        await setActive({ session: createdSessionId });
+        router.replace('/');
+      }
+    } catch (error) {
+      showAuthError(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCodeChange = (value: string, index: number) => {
@@ -85,8 +242,7 @@ export function AuthScreen({ mode }: AuthScreenProps) {
     }
 
     if (nextCode.every(Boolean)) {
-      setIsModalVisible(false);
-      router.replace('/');
+      void handleVerifyCode(nextCode.join(''));
     }
   };
 
@@ -177,8 +333,9 @@ export function AuthScreen({ mode }: AuthScreenProps) {
 
             <Pressable
               accessibilityRole="button"
+              disabled={isFetching}
               className="mt-[12px] h-[67px] items-center justify-center rounded-[14px] bg-[#6442F5]"
-              onPress={openVerificationModal}
+              onPress={handlePrimaryPress}
               style={styles.primaryButton}>
               <Text className="font-lingua-bold text-[20px] leading-[27px] text-white">
                 {copy.button}
@@ -196,7 +353,12 @@ export function AuthScreen({ mode }: AuthScreenProps) {
 
           <View className="gap-[13px]">
             {socialOptions.map((option) => (
-              <Pressable key={option.provider} className="h-[58px] rounded-[14px]" style={styles.socialButton}>
+              <Pressable
+                key={option.provider}
+                disabled={isFetching}
+                className="h-[58px] rounded-[14px]"
+                onPress={() => handleSocialPress(option.provider)}
+                style={styles.socialButton}>
                 <View className="absolute left-[51px]">{renderSocialIcon(option.provider)}</View>
                 <Text className="font-lingua-medium text-[18px] leading-[25px] text-[#08102B]">
                   {option.label}
@@ -222,8 +384,12 @@ export function AuthScreen({ mode }: AuthScreenProps) {
         code={code}
         inputRefs={codeInputs}
         isVisible={isModalVisible}
+        isVerifying={isSubmitting}
         onChangeDigit={handleCodeChange}
-        onClose={() => setIsModalVisible(false)}
+        onClose={() => {
+          setIsModalVisible(false);
+          setActiveVerificationFlow(null);
+        }}
         onKeyPress={handleCodeKeyPress}
       />
     </SafeAreaView>
@@ -234,6 +400,7 @@ type VerificationModalProps = {
   code: string[];
   inputRefs: MutableRefObject<(TextInput | null)[]>;
   isVisible: boolean;
+  isVerifying: boolean;
   onChangeDigit: (value: string, index: number) => void;
   onClose: () => void;
   onKeyPress: (key: string, index: number) => void;
@@ -243,6 +410,7 @@ function VerificationModal({
   code,
   inputRefs,
   isVisible,
+  isVerifying,
   onChangeDigit,
   onClose,
   onKeyPress,
@@ -276,6 +444,7 @@ function VerificationModal({
                 selectionColor="#6442F5"
                 textContentType="oneTimeCode"
                 underlineColorAndroid="transparent"
+                editable={!isVerifying}
                 onChangeText={(value) => onChangeDigit(value, index)}
                 onKeyPress={({ nativeEvent }) => onKeyPress(nativeEvent.key, index)}
                 style={styles.codeInput}
@@ -288,7 +457,7 @@ function VerificationModal({
   );
 }
 
-function renderSocialIcon(provider: (typeof socialOptions)[number]['provider']) {
+function renderSocialIcon(provider: SocialProvider) {
   if (provider === 'google') {
     return (
       <Text className="font-lingua-bold text-[31px] leading-[35px] text-[#4285F4]">
@@ -302,6 +471,30 @@ function renderSocialIcon(provider: (typeof socialOptions)[number]['provider']) 
   }
 
   return <FontAwesome name="apple" size={34} color="#050A22" />;
+}
+
+function showAuthError(error: unknown) {
+  Alert.alert('Authentication error', getAuthErrorMessage(error));
+}
+
+function getAuthErrorMessage(error: unknown) {
+  if (isClerkAPIResponseError(error)) {
+    return error.errors[0]?.message ?? 'Please check your details and try again.';
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    const message = error.message;
+
+    if (typeof message === 'string') {
+      return message;
+    }
+  }
+
+  return 'Please check your details and try again.';
 }
 
 const styles = StyleSheet.create({

@@ -44,6 +44,28 @@ Do not introduce new major libraries unless there is a strong reason.
 
 ---
 
+## Development Environment
+
+Use Node.js `v22.14.0` through nvm for this project.
+
+In non-interactive agent/tool shells, `node` may incorrectly resolve to `/usr/local/bin/node` (`v16.14.0`) instead of the nvm default. Before running npm, Expo, lint, typecheck, or install commands, ensure Node 22 is first in `PATH`.
+
+Preferred command prefix:
+
+```bash
+PATH=/Users/koladegureje/.nvm/versions/node/v22.14.0/bin:$PATH
+```
+
+If a tool shell still resolves the wrong Node version, use the explicit binary:
+
+```bash
+/Users/koladegureje/.nvm/versions/node/v22.14.0/bin/node
+```
+
+This project should not be installed, linted, typechecked, or run with Node 16.
+
+---
+
 ## Development Philosophy
 
 Build feature by feature.
