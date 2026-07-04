@@ -1,10 +1,23 @@
 import { images } from '@/constants/images';
+import { useAuth } from '@clerk/expo';
 import { Image } from 'expo-image';
-import { Link } from 'expo-router';
+import { Link, Redirect, type Href } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+const signUpHref = '/sign-up' as Href;
+
 export default function OnboardingScreen() {
+  const { isLoaded, isSignedIn } = useAuth();
+
+  if (!isLoaded) {
+    return null;
+  }
+
+  if (isSignedIn) {
+    return <Redirect href="/" />;
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       <ScrollView
@@ -66,7 +79,7 @@ export default function OnboardingScreen() {
           </View>
 
           <View className="mt-auto pt-4">
-            <Link href="/" asChild>
+            <Link href={signUpHref} asChild>
               <Pressable style={styles.button}>
                 <Text className="font-lingua-semibold text-[24px] leading-[30px] text-white">
                   Get Started
