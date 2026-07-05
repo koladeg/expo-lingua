@@ -110,7 +110,7 @@ export function BottomTabBar({ state, descriptors, navigation }: BottomTabBarPro
           </Animated.View>
         ) : null}
 
-        <View style={styles.tabRow}>
+        <View className="flex-row justify-between">
           {tabs.map((tab) => {
             const route = visibleRoutes.find((visibleRoute) => visibleRoute.name === tab.routeName);
 
@@ -139,10 +139,10 @@ export function BottomTabBar({ state, descriptors, navigation }: BottomTabBarPro
                 accessibilityRole="button"
                 accessibilityLabel={options?.tabBarAccessibilityLabel ?? tab.label}
                 accessibilityState={isFocused ? { selected: true } : {}}
-                style={styles.tabButton}
+                className="h-[66px] flex-1 items-center justify-center gap-[4px]"
                 onPress={onPress}>
                 {isFocused ? (
-                  <View style={styles.activeCircleSpacer} />
+                  <View className="h-[52px] w-[52px]" />
                 ) : (
                   <>
                     <Ionicons name={tab.icon} size={29} color={INACTIVE_COLOR} />
@@ -171,17 +171,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: TAB_BAR_HORIZONTAL_PADDING,
     paddingTop: 10,
   },
-  tabRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  tabButton: {
-    alignItems: 'center',
-    flex: 1,
-    gap: 4,
-    height: 66,
-    justifyContent: 'center',
-  },
   activeCircle: {
     alignItems: 'center',
     backgroundColor: ACTIVE_COLOR,
@@ -192,9 +181,5 @@ const styles = StyleSheet.create({
     top: 10,
     width: ACTIVE_CIRCLE_SIZE,
     zIndex: 2,
-  },
-  activeCircleSpacer: {
-    height: ACTIVE_CIRCLE_SIZE,
-    width: ACTIVE_CIRCLE_SIZE,
   },
 });

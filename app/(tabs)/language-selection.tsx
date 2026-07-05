@@ -60,7 +60,7 @@ export default function LanguageSelectionScreen() {
             </Text>
           </View>
 
-          <View style={styles.searchField}>
+          <View className="mt-[24px] h-[60px] flex-row items-center gap-[16px] rounded-[25px] border-[1.5px] border-[#E8EAF1] bg-[#FAFAFD] px-[21px]">
             <Ionicons name="search-outline" size={27} color="#5F6B8A" />
             <TextInput
               value={search}
@@ -89,7 +89,11 @@ export default function LanguageSelectionScreen() {
                   accessibilityRole="button"
                   accessibilityState={{ selected: isSelected }}
                   onPress={() => setSelectedLanguageId(language.id)}
-                  style={[styles.languageCard, isSelected && styles.selectedLanguageCard]}>
+                  className={`min-h-[92px] flex-row items-center gap-[18px] rounded-[24px] border px-[18px] ${
+                    isSelected
+                      ? 'border-2 border-[#8C6BFF] bg-[#F8F6FF]'
+                      : 'border-[#F0F1F6] bg-white'
+                  }`}>
                   <Image
                     source={{ uri: language.flag.imageUrl }}
                     style={styles.flag}
@@ -107,7 +111,7 @@ export default function LanguageSelectionScreen() {
                   </View>
 
                   {isSelected ? (
-                    <View style={styles.checkCircle}>
+                    <View className="h-[38px] w-[38px] items-center justify-center rounded-[19px] border-2 border-[#8C6BFF] bg-[#6442F5]">
                       <Ionicons name="checkmark" size={25} color="#FFFFFF" />
                     </View>
                   ) : (
@@ -145,18 +149,6 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
   },
-  searchField: {
-    alignItems: 'center',
-    backgroundColor: '#FAFAFD',
-    borderColor: '#E8EAF1',
-    borderRadius: 25,
-    borderWidth: 1.5,
-    flexDirection: 'row',
-    gap: 16,
-    height: 60,
-    marginTop: 24,
-    paddingHorizontal: 21,
-  },
   searchInput: {
     color: '#050A22',
     flex: 1,
@@ -165,36 +157,10 @@ const styles = StyleSheet.create({
     lineHeight: 25,
     padding: 0,
   },
-  languageCard: {
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderColor: '#F0F1F6',
-    borderRadius: 24,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: 18,
-    minHeight: 92,
-    paddingHorizontal: 18,
-  },
-  selectedLanguageCard: {
-    backgroundColor: '#F8F6FF',
-    borderColor: '#8C6BFF',
-    borderWidth: 2,
-  },
   flag: {
     borderRadius: 24,
     height: 48,
     width: 48,
-  },
-  checkCircle: {
-    alignItems: 'center',
-    backgroundColor: '#6442F5',
-    borderColor: '#8C6BFF',
-    borderRadius: 19,
-    borderWidth: 2,
-    height: 38,
-    justifyContent: 'center',
-    width: 38,
   },
   earth: {
     height: 226,

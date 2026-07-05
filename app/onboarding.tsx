@@ -80,7 +80,7 @@ export default function OnboardingScreen() {
 
           <View className="mt-auto pt-4">
             <Link href={signUpHref} asChild>
-              <Pressable style={styles.button}>
+              <Pressable className="h-[74px] flex-row items-center justify-center rounded-[24px] bg-[#5B3BF6] px-[32px]">
                 <Text className="font-lingua-semibold text-[24px] leading-[30px] text-white">
                   Get Started
                 </Text>
@@ -107,14 +107,5 @@ const styles = StyleSheet.create({
     left: -17,
     position: 'absolute',
     width: 345,
-  },
-  button: {
-    alignItems: 'center',
-    backgroundColor: '#5B3BF6',
-    borderRadius: 24,
-    flexDirection: 'row',
-    height: 74,
-    justifyContent: 'center',
-    paddingHorizontal: 32,
   },
 });
