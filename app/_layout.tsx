@@ -9,9 +9,11 @@ import { useEffect } from 'react';
 import '../global.css';
 import 'react-native-reanimated';
 
+import { validateLearningData } from '@/data/validate-learning-data';
 import { colors } from '@/theme';
 
 void SplashScreen.preventAutoHideAsync();
+validateLearningData();
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '';
 
@@ -62,7 +64,6 @@ export default function RootLayout() {
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>

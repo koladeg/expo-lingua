@@ -1,17 +1,16 @@
 import { useAuth } from '@clerk/expo';
-import { Redirect, Tabs } from 'expo-router';
-import React from 'react';
+import { Redirect, Tabs, usePathname } from 'expo-router';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { BottomTabBar } from '@/components/navigation/bottom-tab-bar';
+import { useLanguageStore } from '@/store/language-store';
 
 export default function TabLayout() {
   const { isLoaded, isSignedIn } = useAuth();
-  const colorScheme = useColorScheme();
+  const pathname = usePathname();
+  const hasHydrated = useLanguageStore((state) => state.hasHydrated);
+  const selectedLanguageId = useLanguageStore((state) => state.selectedLanguageId);
 
-  if (!isLoaded) {
+  if (!isLoaded || !hasHydrated) {
     return null;
   }
 
@@ -19,25 +18,29 @@ export default function TabLayout() {
     return <Redirect href="/onboarding" />;
   }
 
+  if (!selectedLanguageId && pathname !== '/language-selection') {
+    return <Redirect href="/language-selection" />;
+  }
+
   return (
     <Tabs
+      tabBar={(props) => <BottomTabBar {...props} />}
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
+        sceneStyle: {
+          backgroundColor: '#FFFFFF',
+        },
       }}>
+      <Tabs.Screen name="index" options={{ title: 'Home' }} />
+      <Tabs.Screen name="learn" options={{ title: 'Learn' }} />
+      <Tabs.Screen name="ai-teacher" options={{ title: 'AI Teacher' }} />
+      <Tabs.Screen name="chat" options={{ title: 'Chat' }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
       <Tabs.Screen
-        name="index"
+        name="language-selection"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          href: null,
+          title: 'Choose a language',
         }}
       />
     </Tabs>
