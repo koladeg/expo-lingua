@@ -9,8 +9,16 @@ export type ActivityType =
   | 'speak'
   | 'chat-reply';
 
+export type LanguageId = 'spanish' | 'french' | 'yoruba';
+
+export type UnitId = `${LanguageId}-basics-${number}`;
+
+export type LessonId = `${LanguageId}-${string}`;
+
+export type PhraseId = `${LanguageId}-phrase-${string}`;
+
 export type LearningLanguage = {
-  id: string;
+  id: LanguageId;
   name: string;
   nativeName: string;
   shortName: string;
@@ -25,13 +33,13 @@ export type LearningLanguage = {
 };
 
 export type LearningUnit = {
-  id: string;
-  languageId: string;
+  id: UnitId;
+  languageId: LanguageId;
   title: string;
   description: string;
   level: ProficiencyLevel;
   order: number;
-  lessonIds: string[];
+  lessonIds: LessonId[];
 };
 
 export type LessonGoal = {
@@ -48,7 +56,7 @@ export type VocabularyItem = {
 };
 
 export type Phrase = {
-  id: string;
+  id: PhraseId;
   text: string;
   translation: string;
   pronunciation: string;
@@ -63,7 +71,7 @@ export type BaseActivity = {
 
 export type ListenAndRepeatActivity = BaseActivity & {
   type: 'listen-and-repeat';
-  phraseId: string;
+  phraseId: PhraseId;
 };
 
 export type ChooseTranslationActivity = BaseActivity & {
@@ -82,7 +90,7 @@ export type MatchPairsActivity = BaseActivity & {
 
 export type SpeakActivity = BaseActivity & {
   type: 'speak';
-  phraseId: string;
+  phraseId: PhraseId;
   expectedText: string;
 };
 
@@ -107,9 +115,9 @@ export type AITeacherPrompt = {
 };
 
 export type Lesson = {
-  id: string;
-  languageId: string;
-  unitId: string;
+  id: LessonId;
+  languageId: LanguageId;
+  unitId: UnitId;
   title: string;
   description: string;
   level: ProficiencyLevel;

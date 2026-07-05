@@ -9,9 +9,11 @@ import { useEffect } from 'react';
 import '../global.css';
 import 'react-native-reanimated';
 
+import { validateLearningData } from '@/data/validate-learning-data';
 import { colors } from '@/theme';
 
 void SplashScreen.preventAutoHideAsync();
+validateLearningData();
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '';
 
