@@ -1,109 +1,115 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link, type Href } from 'expo-router';
-
-const onboardingHref = '/onboarding' as Href;
+import { useAuth, useUser } from '@clerk/expo';
+import { Link } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const { signOut } = useAuth();
+  const { user } = useUser();
+  const firstName = user?.firstName ?? user?.emailAddresses[0]?.emailAddress ?? 'learner';
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href={onboardingHref}>
-          <Link.Trigger>
-            <ThemedText type="subtitle">Open Onboarding</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-        </Link>
-        <ThemedText>View the new kola_lingo onboarding screen.</ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}>
+        <View className="gap-2">
+          <Text className="font-lingua-bold text-[32px] leading-[40px] text-lingua-text-primary">
+            Welcome back,
+          </Text>
+          <Text className="font-lingua-bold text-[32px] leading-[40px] text-lingua-deep-purple">
+            {firstName}
+          </Text>
+          <Text className="mt-2 font-lingua-regular text-[18px] leading-[28px] text-[#596176]">
+            Your first AI language lesson will live here next.
+          </Text>
+        </View>
+
+        <View className="mt-10 gap-4">
+          <View className="rounded-[24px] bg-[#F5F4FF] p-5">
+            <Text className="font-lingua-semibold text-[20px] leading-[28px] text-lingua-text-primary">
+              Today&apos;s lesson
+            </Text>
+            <Text className="mt-2 font-lingua-regular text-[16px] leading-[24px] text-[#596176]">
+              Start with greetings, listening practice, and a short tutor chat.
+            </Text>
+          </View>
+
+          <Link href="/language-selection" asChild>
+            <Pressable style={styles.languageButton}>
+              <View className="flex-1">
+                <Text className="font-lingua-semibold text-[18px] leading-[25px] text-lingua-text-primary">
+                  Choose your language
+                </Text>
+                <Text className="mt-1 font-lingua-regular text-[14px] leading-[21px] text-[#596176]">
+                  Pick the course you want to start with.
+                </Text>
+              </View>
+              <Text className="font-lingua-bold text-[30px] leading-[34px] text-lingua-deep-purple">
+                ›
+              </Text>
+            </Pressable>
+          </Link>
+
+          <View className="flex-row gap-4">
+            <View className="flex-1 rounded-[20px] bg-[#EEF8FF] p-4">
+              <Text className="font-lingua-bold text-[28px] leading-[34px] text-[#0A84FF]">
+                0
+              </Text>
+              <Text className="mt-1 font-lingua-medium text-[15px] leading-[22px] text-[#596176]">
+                XP
+              </Text>
+            </View>
+
+            <View className="flex-1 rounded-[20px] bg-[#FFF4EE] p-4">
+              <Text className="font-lingua-bold text-[28px] leading-[34px] text-[#FF8A00]">
+                0
+              </Text>
+              <Text className="mt-1 font-lingua-medium text-[15px] leading-[22px] text-[#596176]">
+                Day streak
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <Pressable style={styles.signOutButton} onPress={() => void signOut()}>
+          <Text className="font-lingua-semibold text-[16px] leading-[22px] text-lingua-deep-purple">
+            Sign out
+          </Text>
+        </Pressable>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  safeArea: {
+    backgroundColor: '#FFFFFF',
+    flex: 1,
+  },
+  content: {
+    flexGrow: 1,
+    paddingBottom: 32,
+    paddingHorizontal: 28,
+    paddingTop: 24,
+  },
+  signOutButton: {
     alignItems: 'center',
-    gap: 8,
+    borderColor: '#E8EAF1',
+    borderRadius: 18,
+    borderWidth: 1,
+    height: 54,
+    justifyContent: 'center',
+    marginTop: 'auto',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  languageButton: {
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E8EAF1',
+    borderRadius: 22,
+    borderWidth: 1,
+    flexDirection: 'row',
+    minHeight: 78,
+    paddingHorizontal: 18,
   },
 });
