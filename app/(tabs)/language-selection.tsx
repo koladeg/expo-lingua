@@ -7,8 +7,15 @@ import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useLanguageStore } from '@/store/language-store';
+import type { LanguageId } from '@/types/learning';
+
 export default function LanguageSelectionScreen() {
-  const [selectedLanguageId, setSelectedLanguageId] = useState(defaultLanguageId);
+  const storedLanguageId = useLanguageStore((state) => state.selectedLanguageId);
+  const setSelectedLanguage = useLanguageStore((state) => state.setSelectedLanguage);
+  const [selectedLanguageId, setSelectedLanguageId] = useState<LanguageId>(
+    storedLanguageId ?? defaultLanguageId,
+  );
   const [search, setSearch] = useState('');
 
   const visibleLanguages = useMemo(() => {
@@ -27,6 +34,10 @@ export default function LanguageSelectionScreen() {
   }, [search]);
 
   const selectedLanguage = languages.find((language) => language.id === selectedLanguageId);
+  const handleConfirmLanguage = () => {
+    setSelectedLanguage(selectedLanguageId);
+    router.replace('/');
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -110,7 +121,7 @@ export default function LanguageSelectionScreen() {
           <Pressable
             accessibilityRole="button"
             className="mt-[24px] h-[66px] flex-row items-center justify-center gap-3 rounded-[21px] bg-[#6442F5]"
-            onPress={() => router.back()}>
+            onPress={handleConfirmLanguage}>
             <Text className="font-lingua-bold text-[19px] leading-[26px] text-white">
               Confirm {selectedLanguage?.name ?? 'language'}
             </Text>
