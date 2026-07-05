@@ -290,7 +290,7 @@ export function AuthScreen({ mode }: AuthScreenProps) {
           </View>
 
           <View className="-mt-[4px] gap-[14px]">
-            <View style={styles.inputCard}>
+            <View className="h-[84px] justify-center rounded-[16px] border-[1.5px] border-[#EEF0F5] bg-white px-[18px]">
               <Text className="font-lingua-semibold text-[16px] leading-[22px] text-[#737B96]">
                 Email
               </Text>
@@ -305,7 +305,7 @@ export function AuthScreen({ mode }: AuthScreenProps) {
             </View>
 
             {isSignUp ? (
-              <View style={styles.inputCard}>
+              <View className="h-[84px] justify-center rounded-[16px] border-[1.5px] border-[#EEF0F5] bg-white px-[18px]">
                 <Text className="font-lingua-semibold text-[16px] leading-[22px] text-[#737B96]">
                   Password
                 </Text>
@@ -356,9 +356,8 @@ export function AuthScreen({ mode }: AuthScreenProps) {
               <Pressable
                 key={option.provider}
                 disabled={isFetching}
-                className="h-[58px] rounded-[14px]"
-                onPress={() => handleSocialPress(option.provider)}
-                style={styles.socialButton}>
+                className="h-[58px] flex-row items-center justify-center rounded-[14px] border-[1.5px] border-[#F0F1F5] bg-white"
+                onPress={() => handleSocialPress(option.provider)}>
                 <View className="absolute left-[51px]">{renderSocialIcon(option.provider)}</View>
                 <Text className="font-lingua-medium text-[18px] leading-[25px] text-[#08102B]">
                   {option.label}
@@ -421,7 +420,7 @@ function VerificationModal({
         behavior={process.env.EXPO_OS === 'ios' ? 'padding' : 'height'}
         style={styles.modalKeyboardView}>
         <Pressable style={styles.modalBackdrop} onPress={onClose} />
-        <View style={styles.modalCard}>
+        <View className="rounded-t-[28px] bg-white px-[24px] pb-[32px] pt-[28px]">
           <View className="items-center">
             <Text className="font-lingua-bold text-[25px] leading-[32px] text-[#050A22]">
               Check your email
@@ -509,15 +508,6 @@ const styles = StyleSheet.create({
     height: 177,
     width: 242,
   },
-  inputCard: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#EEF0F5',
-    borderRadius: 16,
-    borderWidth: 1.5,
-    height: 84,
-    justifyContent: 'center',
-    paddingHorizontal: 18,
-  },
   inputText: {
     color: '#050A22',
     fontFamily: 'Poppins-Regular',
@@ -534,14 +524,6 @@ const styles = StyleSheet.create({
   primaryButton: {
     boxShadow: '0 4px 0 #4E2FE4',
   },
-  socialButton: {
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderColor: '#F0F1F5',
-    borderWidth: 1.5,
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
   modalKeyboardView: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -549,14 +531,6 @@ const styles = StyleSheet.create({
   modalBackdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(5, 10, 34, 0.34)',
-  },
-  modalCard: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingBottom: 32,
-    paddingHorizontal: 24,
-    paddingTop: 28,
   },
   codeInput: {
     backgroundColor: '#FFFFFF',
