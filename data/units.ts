@@ -8,7 +8,14 @@ export const units = [
     description: 'Say hello, introduce yourself, and recognize common words.',
     level: 'beginner',
     order: 1,
-    lessonIds: ['spanish-greetings', 'spanish-introductions'],
+    lessonIds: [
+      'spanish-greetings',
+      'spanish-introductions',
+      'spanish-cafe',
+      'spanish-travel-directions',
+      'spanish-shopping',
+      'spanish-family-friends',
+    ],
   },
   {
     id: 'french-basics-1',
@@ -17,7 +24,14 @@ export const units = [
     description: 'Build confidence with greetings and polite replies.',
     level: 'beginner',
     order: 1,
-    lessonIds: ['french-greetings'],
+    lessonIds: [
+      'french-greetings',
+      'french-daily-life',
+      'french-cafe',
+      'french-travel-directions',
+      'french-shopping',
+      'french-family-friends',
+    ],
   },
   {
     id: 'yoruba-basics-1',
@@ -26,6 +40,13 @@ export const units = [
     description: 'Practice short greetings for family and friends.',
     level: 'beginner',
     order: 1,
-    lessonIds: ['yoruba-greetings'],
+    lessonIds: [
+      'yoruba-greetings',
+      'yoruba-daily-life',
+      'yoruba-cafe',
+      'yoruba-travel-directions',
+      'yoruba-shopping',
+      'yoruba-family-friends',
+    ],
   },
 ] satisfies LearningUnit[];
