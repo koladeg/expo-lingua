@@ -109,7 +109,7 @@ npx expo run:android
 
 ### Configuration
 
-PostHog is configured in `src/config/posthog.ts` using environment variables from `app.json`:
+PostHog is configured in `src/config/posthog.ts` using values from `Constants.expoConfig?.extra`, which are populated in `app.config.js`:
 
 ```typescript
 import Constants from 'expo-constants'
@@ -1409,4 +1409,3 @@ export const shadows = {
 ```
 
 ---
-

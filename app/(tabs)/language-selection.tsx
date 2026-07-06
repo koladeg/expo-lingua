@@ -39,7 +39,7 @@ export default function LanguageSelectionScreen() {
   const handleConfirmLanguage = () => {
     posthog.capture('language_confirmed', {
       language_id: selectedLanguageId,
-      language_name: selectedLanguage?.name,
+      language_name: selectedLanguage?.name ?? null,
     });
     setSelectedLanguage(selectedLanguageId);
     router.replace('/');
