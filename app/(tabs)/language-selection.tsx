@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { usePostHog } from 'posthog-react-native';
 
 import { useLanguageStore } from '@/store/language-store';
 import type { LanguageId } from '@/types/learning';
@@ -17,6 +18,7 @@ export default function LanguageSelectionScreen() {
     storedLanguageId ?? defaultLanguageId,
   );
   const [search, setSearch] = useState('');
+  const posthog = usePostHog();
 
   const visibleLanguages = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -35,6 +37,10 @@ export default function LanguageSelectionScreen() {
 
   const selectedLanguage = languages.find((language) => language.id === selectedLanguageId);
   const handleConfirmLanguage = () => {
+    posthog.capture('language_confirmed', {
+      language_id: selectedLanguageId,
+      language_name: selectedLanguage?.name,
+    });
     setSelectedLanguage(selectedLanguageId);
     router.replace('/');
   };

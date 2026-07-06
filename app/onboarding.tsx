@@ -4,11 +4,13 @@ import { Image } from 'expo-image';
 import { Link, Redirect, type Href } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { usePostHog } from 'posthog-react-native';
 
 const signUpHref = '/sign-up' as Href;
 
 export default function OnboardingScreen() {
   const { isLoaded, isSignedIn } = useAuth();
+  const posthog = usePostHog();
 
   if (!isLoaded) {
     return null;
@@ -80,7 +82,9 @@ export default function OnboardingScreen() {
 
           <View className="mt-auto pt-4">
             <Link href={signUpHref} asChild>
-              <Pressable className="h-[74px] flex-row items-center justify-center rounded-[24px] bg-[#5B3BF6] px-[32px]">
+              <Pressable
+                className="h-[74px] flex-row items-center justify-center rounded-[24px] bg-[#5B3BF6] px-[32px]"
+                onPress={() => posthog.capture('get_started_pressed')}>
                 <Text className="font-lingua-semibold text-[24px] leading-[30px] text-white">
                   Get Started
                 </Text>

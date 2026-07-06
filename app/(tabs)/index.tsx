@@ -1,9 +1,10 @@
 import { useUser } from '@clerk/expo';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useEffect } from 'react';
+import { ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { usePostHog } from 'posthog-react-native';
 
 import { images } from '@/constants/images';
 import { languages } from '@/data/languages';
@@ -43,6 +44,7 @@ const greetings: Record<LanguageId, string> = {
 export default function HomeScreen() {
   const { isLoaded: isUserLoaded, user } = useUser();
   const selectedLanguageId = useLanguageStore((state) => state.selectedLanguageId);
+  const posthog = usePostHog();
 
   const homeData = useMemo(() => {
     const selectedLanguage = languages.find((language) => language.id === selectedLanguageId);
@@ -89,6 +91,17 @@ export default function HomeScreen() {
 
     return trimmedName && trimmedName.length > 0 ? trimmedName : 'Learner';
   }, [user]);
+
+  useEffect(() => {
+    if (!user || !homeData) return;
+    posthog.identify(user.id);
+    posthog.capture('daily_goal_viewed', {
+      language_id: homeData.selectedLanguage.id,
+      daily_xp: homeData.dailyXp,
+      daily_goal_xp: DAILY_GOAL_XP,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, homeData?.selectedLanguage.id]);
 
   if (!isUserLoaded || !user || !homeData) {
     return null;
@@ -174,11 +187,20 @@ export default function HomeScreen() {
                 {proficiencyLabels[homeData.currentUnit?.level ?? 'beginner']} · Unit{' '}
                 {homeData.currentUnit?.order ?? 1}
               </Text>
-              <View className="mt-[17px] h-[50px] w-[125px] items-center justify-center rounded-[16px] bg-white">
+              <Pressable
+                className="mt-[17px] h-[50px] w-[125px] items-center justify-center rounded-[16px] bg-white"
+                onPress={() =>
+                  posthog.capture('lesson_continued', {
+                    lesson_id: homeData.currentLesson?.id,
+                    lesson_title: homeData.currentLesson?.title,
+                    lesson_mode: currentLessonMode,
+                    language_id: homeData.selectedLanguage.id,
+                  })
+                }>
                 <Text className="font-lingua-bold text-[20px] leading-[26px] text-[#6747F5]">
                   Continue
                 </Text>
-              </View>
+              </Pressable>
             </View>
 
             <View style={styles.mountainBack} />
