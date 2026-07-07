@@ -1,13 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useMemo } from 'react';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ControlButton } from '@/components/lesson/control-button';
 import { images } from '@/constants/images';
 import { languages } from '@/data/languages';
 import { lessons } from '@/data/lessons';
+import { useAudioLessonSession } from '@/hooks/use-audio-lesson-session';
 import { colors } from '@/theme';
 
 const sessionFeedback = [
@@ -27,25 +29,7 @@ export default function AudioLessonScreen() {
     [lesson],
   );
 
-  const [phraseIndex, setPhraseIndex] = useState(0);
-  const [isCameraOn, setIsCameraOn] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [showSubtitles, setShowSubtitles] = useState(true);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(true);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-
-  const speakerScale = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    const timeout = setTimeout(() => setIsConnecting(false), 1200);
-    return () => clearTimeout(timeout);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => setElapsedSeconds((seconds) => seconds + 1), 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const session = useAudioLessonSession(lesson?.phrases.length ?? 0);
 
   if (!lesson || !language) {
     return (
@@ -64,37 +48,7 @@ export default function AudioLessonScreen() {
     );
   }
 
-  const currentPhrase = lesson.phrases[phraseIndex % lesson.phrases.length];
-  const formattedTime = `${String(Math.floor(elapsedSeconds / 60)).padStart(2, '0')}:${String(
-    elapsedSeconds % 60,
-  ).padStart(2, '0')}`;
-
-  const playCurrentPhrase = () => {
-    setIsSpeaking(true);
-    Animated.sequence([
-      Animated.timing(speakerScale, { toValue: 1.2, duration: 180, useNativeDriver: true }),
-      Animated.timing(speakerScale, { toValue: 1, duration: 180, useNativeDriver: true }),
-    ]).start(() => {
-      setIsSpeaking(false);
-      setPhraseIndex((index) => (index + 1) % lesson.phrases.length);
-    });
-  };
-
-  const handleEndCall = () => {
-    Alert.alert('End lesson?', 'You can pick up where you left off any time.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'End lesson', style: 'destructive', onPress: () => router.back() },
-    ]);
-  };
-
-  const handleCameraPress = () => {
-    if (isCameraOn) {
-      setIsCameraOn(false);
-      return;
-    }
-
-    Alert.alert('Audio-only lesson', "Video isn't available in this lesson yet.");
-  };
+  const currentPhrase = lesson.phrases[session.phraseIndex % lesson.phrases.length];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -113,10 +67,10 @@ export default function AudioLessonScreen() {
           <View className="mt-[2px] flex-row items-center gap-[6px]">
             <View
               className="h-[8px] w-[8px] rounded-full"
-              style={{ backgroundColor: isConnecting ? '#FFC800' : '#25C20F' }}
+              style={{ backgroundColor: session.isConnecting ? '#FFC800' : '#25C20F' }}
             />
             <Text className="font-lingua-semibold text-[13px] leading-[18px] text-[#69728F]">
-              {isConnecting ? 'Connecting…' : 'Online'}
+              {session.isConnecting ? 'Connecting…' : 'Online'}
             </Text>
           </View>
         </View>
@@ -125,7 +79,7 @@ export default function AudioLessonScreen() {
           <View className="flex-row items-center gap-[4px] rounded-full bg-[#F6F7FB] px-[10px] py-[7px]">
             <Ionicons name="time-outline" size={14} color="#69728F" />
             <Text className="font-lingua-semibold text-[12px] leading-[16px] text-[#69728F]">
-              {formattedTime}
+              {session.formattedTime}
             </Text>
           </View>
           <Pressable
@@ -200,8 +154,8 @@ export default function AudioLessonScreen() {
               accessibilityLabel="Play teacher response"
               className="rounded-[22px] bg-white px-[18px] py-[14px]"
               style={styles.bubbleShadow}
-              onPress={playCurrentPhrase}>
-              {showSubtitles ? (
+              onPress={session.playCurrentPhrase}>
+              {session.showSubtitles ? (
                 <View className="flex-row items-start justify-between gap-[12px]">
                   <View className="flex-1">
                     <Text className="font-lingua-bold text-[18px] leading-[25px] text-[#061032]">
@@ -211,9 +165,9 @@ export default function AudioLessonScreen() {
                       {currentPhrase.translation} 👏
                     </Text>
                   </View>
-                  <Animated.View style={{ transform: [{ scale: speakerScale }] }}>
+                  <Animated.View style={{ transform: [{ scale: session.speakerScale }] }}>
                     <Ionicons
-                      name={isSpeaking ? 'volume-high' : 'volume-medium-outline'}
+                      name={session.isSpeaking ? 'volume-high' : 'volume-medium-outline'}
                       size={24}
                       color="#6C4EF5"
                     />
@@ -221,7 +175,7 @@ export default function AudioLessonScreen() {
                 </View>
               ) : (
                 <View className="flex-row items-center gap-[10px]">
-                  <Animated.View style={{ transform: [{ scale: speakerScale }] }}>
+                  <Animated.View style={{ transform: [{ scale: session.speakerScale }] }}>
                     <Ionicons name="volume-high" size={20} color="#6C4EF5" />
                   </Animated.View>
                   <Text className="font-lingua-semibold text-[14px] leading-[19px] text-[#69728F]">
@@ -236,35 +190,35 @@ export default function AudioLessonScreen() {
 
       <View className="flex-row items-center justify-evenly px-[16px] pt-[22px]">
         <ControlButton
-          icon={isCameraOn ? 'videocam' : 'videocam-off'}
+          icon={session.isCameraOn ? 'videocam' : 'videocam-off'}
           label="Camera"
-          active={isCameraOn}
-          tint={isCameraOn ? '#6C4EF5' : '#061032'}
-          background={isCameraOn ? '#F1EDFF' : '#F6F7FB'}
-          onPress={handleCameraPress}
+          active={session.isCameraOn}
+          tint={session.isCameraOn ? '#6C4EF5' : '#061032'}
+          background={session.isCameraOn ? '#F1EDFF' : '#F6F7FB'}
+          onPress={session.handleCameraPress}
         />
         <ControlButton
-          icon={isMuted ? 'mic-off' : 'mic'}
+          icon={session.isMuted ? 'mic-off' : 'mic'}
           label="Mic"
-          active={!isMuted}
-          tint={isMuted ? '#FF4D4F' : '#061032'}
-          background={isMuted ? '#FFF1F0' : '#F6F7FB'}
-          onPress={() => setIsMuted((muted) => !muted)}
+          active={!session.isMuted}
+          tint={session.isMuted ? '#FF4D4F' : '#061032'}
+          background={session.isMuted ? '#FFF1F0' : '#F6F7FB'}
+          onPress={session.toggleMic}
         />
         <ControlButton
           icon="language-outline"
           label="Subtitles"
-          active={showSubtitles}
-          tint={showSubtitles ? '#6C4EF5' : '#061032'}
-          background={showSubtitles ? '#F1EDFF' : '#F6F7FB'}
-          onPress={() => setShowSubtitles((visible) => !visible)}
+          active={session.showSubtitles}
+          tint={session.showSubtitles ? '#6C4EF5' : '#061032'}
+          background={session.showSubtitles ? '#F1EDFF' : '#F6F7FB'}
+          onPress={session.toggleSubtitles}
         />
         <View className="items-center gap-[8px]">
           <Pressable
             accessibilityLabel="End call"
             className="h-[64px] w-[64px] items-center justify-center rounded-full"
             style={{ backgroundColor: colors.error }}
-            onPress={handleEndCall}>
+            onPress={session.handleEndCall}>
             <Ionicons name="call" size={26} color="#FFFFFF" style={{ transform: [{ rotate: '135deg' }] }} />
           </Pressable>
           <Text className="font-lingua-semibold text-[13px] leading-[18px] text-[#061032]">
@@ -288,31 +242,6 @@ export default function AudioLessonScreen() {
         ))}
       </View>
     </SafeAreaView>
-  );
-}
-
-type ControlButtonProps = {
-  active: boolean;
-  background: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-  onPress: () => void;
-  tint: string;
-};
-
-function ControlButton({ active, background, icon, label, onPress, tint }: ControlButtonProps) {
-  return (
-    <View className="items-center gap-[8px]">
-      <Pressable
-        accessibilityLabel={label}
-        accessibilityState={{ selected: active }}
-        className="h-[56px] w-[56px] items-center justify-center rounded-full"
-        style={[styles.controlShadow, { backgroundColor: background }]}
-        onPress={onPress}>
-        <Ionicons name={icon} size={24} color={tint} />
-      </Pressable>
-      <Text className="font-lingua-semibold text-[13px] leading-[18px] text-[#061032]">{label}</Text>
-    </View>
   );
 }
 
@@ -342,9 +271,6 @@ const styles = StyleSheet.create({
   },
   bubbleShadow: {
     boxShadow: '0 8px 20px rgba(13, 19, 43, 0.16)',
-  },
-  controlShadow: {
-    boxShadow: '0 4px 12px rgba(13, 19, 43, 0.08)',
   },
   feedbackShadow: {
     boxShadow: '0 6px 18px rgba(13, 19, 43, 0.06)',
