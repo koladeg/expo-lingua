@@ -5,7 +5,7 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { usePostHog } from 'posthog-react-native';
 
 import { useLanguageStore } from '@/store/language-store';
@@ -19,6 +19,7 @@ export default function LanguageSelectionScreen() {
   );
   const [search, setSearch] = useState('');
   const posthog = usePostHog();
+  const insets = useSafeAreaInsets();
 
   const visibleLanguages = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -50,7 +51,7 @@ export default function LanguageSelectionScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.content}>
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom }]}>
         <View className="min-h-full px-[26px] pb-0 pt-[18px]">
           <View className="relative h-[46px] items-center justify-center">
             <Pressable

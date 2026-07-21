@@ -17,7 +17,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const codeLength = 6;
 
@@ -62,6 +62,7 @@ export function AuthScreen({ mode }: AuthScreenProps) {
   const { signUp, fetchStatus: signUpFetchStatus } = useSignUp();
   const { startSSOFlow } = useSSO();
   const posthog = usePostHog();
+  const insets = useSafeAreaInsets();
   const copy = authCopy[mode];
   const isSignUp = mode === 'sign-up';
   const [email, setEmail] = useState<string>(copy.email);
@@ -279,7 +280,7 @@ export function AuthScreen({ mode }: AuthScreenProps) {
       <ScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.scrollContent}>
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom }]}>
         <View className="min-h-full px-[31px] pb-7 pt-[28px]">
           <Pressable
             accessibilityRole="button"
