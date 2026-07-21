@@ -1,3 +1,5 @@
+import type { ImageProps } from 'expo-image';
+
 import earth from '@/assets/images/earth.png';
 import mascotAuth from '@/assets/images/mascot-auth.png';
 import mascotLogo from '@/assets/images/moscot-logo.png';
@@ -41,7 +43,7 @@ export const images = {
   treasure,
 };
 
-export const lessonImages: Record<LessonId, unknown> = {
+export const lessonImages: Record<LessonId, ImageProps['source']> = {
   'spanish-greetings': mascotWelcome,
   'spanish-introductions': earth,
   'spanish-cafe': cafeIllustration,
