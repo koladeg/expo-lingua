@@ -35,9 +35,9 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  const lesson = lessons.find((currentLesson) => currentLesson.id === body.lessonId);
+  const lesson = lessons.find((currentLesson) => currentLesson.id === body?.lessonId);
 
-  if (!lesson || !body.sessionId) {
+  if (!lesson || !body?.sessionId) {
     return Response.json({ error: 'Unknown lesson or session' }, { status: 400 });
   }
 

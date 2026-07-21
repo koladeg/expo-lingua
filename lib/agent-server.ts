@@ -17,7 +17,7 @@ function getAgentServiceUrl(): string {
 }
 
 function getAgentServiceHeaders(): HeadersInit {
-  const headers: HeadersInit = { 'Content-Type': 'application/json' };
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   const apiKey = process.env.AGENT_SERVICE_API_KEY;
 
   if (apiKey) {

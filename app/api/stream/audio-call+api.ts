@@ -56,11 +56,7 @@ function isStreamTimeout(error: unknown, depth = 0): boolean {
   }
 
   const nested = (error as { cause?: unknown }).cause;
-  if (isStreamTimeout(nested, depth + 1)) {
-    return true;
-  }
-
-  return isStreamTimeout(code, depth + 1);
+  return isStreamTimeout(nested, depth + 1);
 }
 
 async function runStreamRequest<T>(request: () => Promise<T>): Promise<T> {
