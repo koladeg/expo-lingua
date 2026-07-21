@@ -5,8 +5,8 @@ import type { LessonActivity, LessonId, PhraseId } from '@/types/learning';
 
 export function validateLearningData() {
   const languageIds = new Set(languages.map((language) => language.id));
-  const lessonIds = new Set(lessons.map((lesson) => lesson.id));
-  const unitIds = new Set(units.map((unit) => unit.id));
+  const lessonIds = new Set<string>(lessons.map((lesson) => lesson.id));
+  const unitIds = new Set<string>(units.map((unit) => unit.id));
   const errors: string[] = [];
 
   collectDuplicates(

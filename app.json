@@ -2,6 +2,7 @@
   "expo": {
     "name": "duolingo-clone",
     "slug": "duolingo-clone",
+    "owner": "koladegureje",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -9,9 +10,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.koladegureje.duolingo-clone"
     },
     "android": {
+      "package": "com.koladegureje.duolingoclone",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -39,6 +42,22 @@
           "dark": {
             "backgroundColor": "#000000"
           }
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 24
+          }
+        }
+      ],
+      "@stream-io/video-react-native-sdk",
+      [
+        "@config-plugins/react-native-webrtc",
+        {
+          "cameraPermission": "$(PRODUCT_NAME) needs camera access for video lessons.",
+          "microphonePermission": "$(PRODUCT_NAME) needs microphone access so the AI teacher can hear you speak."
         }
       ]
     ],

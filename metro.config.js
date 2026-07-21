@@ -20,21 +20,27 @@ config.resolver.extraNodeModules = {
 const nativewindConfig = withNativewind(config);
 const nativewindResolveRequest = nativewindConfig.resolver.resolveRequest;
 
-const resolverExtensions = [
-  "ios.js",
-  "native.js",
-  "js",
-  "jsx",
-  "ios.ts",
-  "native.ts",
-  "ts",
-  "ios.tsx",
-  "native.tsx",
-  "tsx",
-  "json",
-];
+function getResolverExtensions(platform) {
+  const platformExt = platform === "ios" ? "ios" : "android";
 
-function resolveExistingFile(basePath) {
+  return [
+    `${platformExt}.js`,
+    "native.js",
+    "js",
+    "jsx",
+    `${platformExt}.ts`,
+    "native.ts",
+    "ts",
+    `${platformExt}.tsx`,
+    "native.tsx",
+    "tsx",
+    "json",
+  ];
+}
+
+function resolveExistingFile(basePath, platform) {
+  const resolverExtensions = getResolverExtensions(platform);
+
   for (const extension of resolverExtensions) {
     const filePath = `${basePath}.${extension}`;
 
@@ -54,7 +60,7 @@ function resolveExistingFile(basePath) {
   return null;
 }
 
-function resolveReactNativeInternal(context, moduleName) {
+function resolveReactNativeInternal(context, moduleName, platform) {
   const originModulePath = context.originModulePath;
 
   if (
@@ -66,7 +72,8 @@ function resolveReactNativeInternal(context, moduleName) {
   }
 
   const filePath = resolveExistingFile(
-    path.resolve(path.dirname(originModulePath), moduleName)
+    path.resolve(path.dirname(originModulePath), moduleName),
+    platform
   );
 
   if (!filePath) {
@@ -89,7 +96,8 @@ nativewindConfig.resolver.resolveRequest = (context, moduleName, platform) => {
 
   const reactNativeInternalModule = resolveReactNativeInternal(
     context,
-    moduleName
+    moduleName,
+    platform
   );
 
   if (reactNativeInternalModule) {

@@ -5,6 +5,7 @@ import { Image } from 'expo-image';
 import { Link, Redirect, router, type Href } from 'expo-router';
 import type { MutableRefObject } from 'react';
 import { useRef, useState } from 'react';
+import { usePostHog } from 'posthog-react-native';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -16,7 +17,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const codeLength = 6;
 
@@ -60,6 +61,8 @@ export function AuthScreen({ mode }: AuthScreenProps) {
   const { signIn, fetchStatus: signInFetchStatus } = useSignIn();
   const { signUp, fetchStatus: signUpFetchStatus } = useSignUp();
   const { startSSOFlow } = useSSO();
+  const posthog = usePostHog();
+  const insets = useSafeAreaInsets();
   const copy = authCopy[mode];
   const isSignUp = mode === 'sign-up';
   const [email, setEmail] = useState<string>(copy.email);
@@ -98,6 +101,20 @@ export function AuthScreen({ mode }: AuthScreenProps) {
 
     if (error) {
       throw error;
+    }
+
+    const userId = flow === 'sign-up' ? signUp?.createdUserId : signIn?.createdSessionId;
+
+    if (userId) {
+      posthog.identify(userId);
+    }
+
+    if (flow === 'sign-up') {
+      posthog.capture('user_signed_up', {
+        $set_once: { first_sign_up_date: new Date().toISOString() },
+      });
+    } else {
+      posthog.capture('user_signed_in');
     }
 
     setIsModalVisible(false);
@@ -154,6 +171,7 @@ export function AuthScreen({ mode }: AuthScreenProps) {
 
       openVerificationModal('sign-in');
     } catch (error) {
+      posthog.capture('auth_error_occurred', { mode });
       showAuthError(error);
     } finally {
       setIsSubmitting(false);
@@ -191,6 +209,7 @@ export function AuthScreen({ mode }: AuthScreenProps) {
 
       await finishAuth('sign-in');
     } catch (error) {
+      posthog.capture('auth_error_occurred', { mode: activeVerificationFlow, step: 'verification' });
       showAuthError(error);
       setCode(Array.from({ length: codeLength }, () => ''));
       codeInputs.current[0]?.focus();
@@ -200,6 +219,8 @@ export function AuthScreen({ mode }: AuthScreenProps) {
   };
 
   const handleSocialPress = async (provider: SocialProvider) => {
+    posthog.capture('social_auth_attempted', { provider, mode });
+
     if (provider !== 'google') {
       Alert.alert(
         'Provider not enabled',
@@ -217,9 +238,11 @@ export function AuthScreen({ mode }: AuthScreenProps) {
 
       if (createdSessionId && setActive) {
         await setActive({ session: createdSessionId });
+        posthog.capture('user_signed_in', { provider: 'google', mode });
         router.replace('/');
       }
     } catch (error) {
+      posthog.capture('auth_error_occurred', { provider, mode });
       showAuthError(error);
     } finally {
       setIsSubmitting(false);
@@ -257,7 +280,7 @@ export function AuthScreen({ mode }: AuthScreenProps) {
       <ScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.scrollContent}>
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom }]}>
         <View className="min-h-full px-[31px] pb-7 pt-[28px]">
           <Pressable
             accessibilityRole="button"
