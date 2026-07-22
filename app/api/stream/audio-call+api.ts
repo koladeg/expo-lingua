@@ -148,6 +148,40 @@ export async function POST(request: Request) {
       }),
     );
 
+    // `callId` is deterministic (one call per lesson+user, reused across
+    // sessions — see buildAudioCallId), so `getOrCreate`'s settings_override
+    // above only takes effect the very first time the call is created; on
+    // every later lesson replay it's a no-op because the call already
+    // exists. `call.update()` is the API that actually applies
+    // settings_override to an existing call, so it's the one that reliably
+    // turns on live captions (both the learner's mic and the AI teacher's
+    // speech) regardless of whether this call is new or a repeat. Not fatal
+    // if it fails — the lesson call itself still works without captions.
+    try {
+      await runStreamRequest(() =>
+        call.update({
+          settings_override: {
+            transcription: {
+              closed_caption_mode: 'auto-on',
+              language: 'en',
+              // Stream only emits a caption once it decides a speech segment
+              // is finished (default: after 700ms of silence, or 9s max) —
+              // there's no word-by-word interim update. Shortening both cuts
+              // segments sooner and more often, so captions catch up with a
+              // speaker mid-sentence instead of waiting for them to finish
+              // whole sentences.
+              speech_segment_config: {
+                silence_duration_ms: 300,
+                max_speech_caption_ms: 3000,
+              },
+            },
+          },
+        }),
+      );
+    } catch (error) {
+      console.error(`Failed to enable live captions on call ${callId}`, error);
+    }
+
     const token = client.generateUserToken({
       user_id: userId,
       validity_in_seconds: TOKEN_VALIDITY_SECONDS,

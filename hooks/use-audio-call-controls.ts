@@ -37,8 +37,6 @@ export function useAudioCallControls(call: Call, phraseCount: number) {
 
   const [joinError, setJoinError] = useState<string | null>(null);
   const [phraseIndex, setPhraseIndex] = useState(0);
-  const [isCameraOn, setIsCameraOn] = useState(false);
-  const [showSubtitles, setShowSubtitles] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
@@ -114,16 +112,6 @@ export function useAudioCallControls(call: Call, phraseCount: number) {
     void microphone.toggle();
   }, [microphone, status]);
 
-  const toggleSubtitles = useCallback(() => setShowSubtitles((visible) => !visible), []);
-
-  const handleCameraPress = useCallback(() => {
-    if (isCameraOn) {
-      setIsCameraOn(false);
-      return;
-    }
-    Alert.alert('Audio-only lesson', "Video isn't available in this lesson yet.");
-  }, [isCameraOn]);
-
   const handleEndCall = useCallback(() => {
     Alert.alert('End lesson?', 'You can pick up where you left off any time.', [
       { text: 'Cancel', style: 'cancel' },
@@ -142,9 +130,7 @@ export function useAudioCallControls(call: Call, phraseCount: number) {
   return {
     connectedUser,
     formattedTime,
-    handleCameraPress,
     handleEndCall,
-    isCameraOn,
     isMuted: isMute,
     isSpeaking,
     joinError,
@@ -152,10 +138,8 @@ export function useAudioCallControls(call: Call, phraseCount: number) {
     phraseIndex,
     playCurrentPhrase,
     retryJoin: attemptJoin,
-    showSubtitles,
     speakerScale,
     status,
     toggleMic,
-    toggleSubtitles,
   };
 }

@@ -8,7 +8,7 @@ from getstream.models import MemberRequest
 from vision_agents.core import Agent, Runner, ServeOptions, User
 from vision_agents.core.agents import AgentLauncher
 from vision_agents.core.instructions import Instructions
-from vision_agents.plugins import getstream, openai
+from vision_agents.plugins import gemini, getstream
 
 load_dotenv()
 
@@ -19,15 +19,26 @@ DEFAULT_LANGUAGE_NAME = "Spanish"
 # The teacher always speaks English, and teaches the target language through
 # English explanations — never switches its own speaking language.
 BASE_INSTRUCTIONS = (
-    "You are a friendly AI language teacher hosting a live, voice-only lesson "
-    "inside a language-learning app.\n\n"
+    "You're a warm, energetic AI language teacher hosting a live, voice-only "
+    "lesson inside a language-learning app. Talk like a real teacher sitting "
+    "next to your student — not a script reader.\n\n"
     "- Always speak English yourself, no matter what language the learner uses.\n"
-    "- Teach {language_name} through English: say a {language_name} word or "
-    "phrase, explain what it means in English, then ask the learner to repeat "
-    "it out loud.\n"
-    "- Keep replies short (1-3 sentences) — this is a spoken conversation, not "
-    "a chat.\n"
-    "- Be warm, encouraging, and patient. Celebrate small wins.\n"
+    "- Stay strictly inside today's lesson: its goal, its vocabulary, and its "
+    "phrases only. Don't teach unrelated topics, don't bring in {language_name} "
+    "words outside this lesson, and never switch to teaching a different "
+    "language.\n"
+    "- Introduce each {language_name} word or phrase slowly, give its English "
+    "translation right away, then ask the learner to say it out loud.\n"
+    "- Use short, natural sentences with contractions — \"let's try that\", "
+    "\"you've got it\", \"that's close\" — the way a person actually talks.\n"
+    "- Really listen to what the learner says back and let it shape your next "
+    "line: if they nailed it, react with genuine excitement and move on; if "
+    "they struggled, slow down, explain it a different way, and ask them to "
+    "try again.\n"
+    "- Be genuinely encouraging and upbeat, never flat or robotic. Celebrate "
+    "small wins like you mean it.\n"
+    "- Keep every reply to one or two conversational sentences — this is a "
+    "spoken back-and-forth, not a monologue.\n"
     "- Never use markdown, bullet points, or special characters — everything "
     "you say is spoken aloud."
 )
@@ -105,7 +116,7 @@ async def create_agent(**kwargs) -> Agent:
         edge=getstream.Edge(),
         agent_user=User(name="AI Teacher", id="ai-teacher"),
         instructions=INSTRUCTIONS,
-        llm=openai.Realtime(voice="marin", send_video=False),
+        llm=gemini.Realtime(),
     )
 
 
@@ -124,6 +135,13 @@ async def join_call(agent: Agent, call_type: str, call_id: str, **kwargs) -> Non
         custom = {}
 
     agent.instructions = Instructions(input_text=build_instructions(custom))
+    # Agent.__init__ already snapshotted the default (Spanish) instructions
+    # into the LLM plugin via llm._attach_agent -> llm.set_instructions, at
+    # create_agent() time before the call/lesson was known. Reassigning
+    # agent.instructions alone doesn't reach that snapshot, so the realtime
+    # session would otherwise connect with the wrong language — push the
+    # per-lesson instructions into the LLM too, before agent.join() connects.
+    agent.llm.set_instructions(agent.instructions)
 
     # The "audio_room" call type (see app/api/stream/audio-call+api.ts)
     # starts in "backstage" and only lets speaker/host/admin roles publish
@@ -144,7 +162,12 @@ async def join_call(agent: Agent, call_type: str, call_id: str, **kwargs) -> Non
 
     async with agent.join(call):
         await agent.simple_response(
-            text="Greet the learner warmly in English and introduce today's lesson."
+            text=(
+                "Greet the learner in English like you're genuinely happy to see "
+                "them, and name today's lesson in one energetic sentence. Then, in "
+                "one more short sentence, tell them the one thing they'll be able "
+                "to say by the end, and invite them to dive in."
+            )
         )
         await agent.finish()
 

@@ -1,4 +1,4 @@
-import { useUser } from '@clerk/expo';
+import { useAuth, useUser } from '@clerk/expo';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useMemo, useEffect } from 'react';
@@ -43,6 +43,7 @@ const greetings: Record<LanguageId, string> = {
 
 export default function HomeScreen() {
   const { isLoaded: isUserLoaded, user } = useUser();
+  const { signOut } = useAuth();
   const selectedLanguageId = useLanguageStore((state) => state.selectedLanguageId);
   const posthog = usePostHog();
 
@@ -145,7 +146,11 @@ export default function HomeScreen() {
                   12
                 </Text>
               </View>
-              <Ionicons name="notifications-outline" size={31} color="#111633" />
+              {/* Temporary: no logout entry point exists yet, so this
+                  doubles as a quick way to sign out during development. */}
+              <Pressable accessibilityLabel="Sign out" onPress={() => signOut()}>
+                <Ionicons name="notifications-outline" size={31} color="#111633" />
+              </Pressable>
             </View>
           </View>
 

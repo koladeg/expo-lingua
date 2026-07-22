@@ -146,7 +146,11 @@ export function BottomTabBar({ state, descriptors, navigation }: BottomTabBarPro
                 ) : (
                   <>
                     <Ionicons name={tab.icon} size={29} color={INACTIVE_COLOR} />
-                    <Text className="font-lingua-semibold text-[13px] leading-[18px] text-[#7B849E]">
+                    <Text
+                      className="font-lingua-semibold text-[13px] leading-[18px] text-[#7B849E]"
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.85}>
                       {tab.label}
                     </Text>
                   </>

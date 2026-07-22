@@ -9,6 +9,7 @@ import { ControlButton } from '@/components/lesson/control-button';
 import { images } from '@/constants/images';
 import { useAgentSession } from '@/hooks/use-agent-session';
 import { useAudioCallControls } from '@/hooks/use-audio-call-controls';
+import { useLiveCaptions } from '@/hooks/use-live-captions';
 import { colors } from '@/theme';
 import type { LearningLanguage, Lesson } from '@/types/learning';
 
@@ -27,6 +28,8 @@ type AudioLessonContentProps = {
 export function AudioLessonContent({ call, lesson, language }: AudioLessonContentProps) {
   const session = useAudioCallControls(call, lesson.phrases.length);
   const agentSession = useAgentSession(lesson.id, call);
+  const liveCaptions = useLiveCaptions();
+  const latestCaption = liveCaptions[liveCaptions.length - 1];
   const currentPhrase = lesson.phrases[session.phraseIndex % lesson.phrases.length];
 
   // Ending the call doesn't unmount this screen (it shows the "Lesson
@@ -139,31 +142,6 @@ export function AudioLessonContent({ call, lesson, language }: AudioLessonConten
         </View>
       </View>
 
-      <View className="gap-[6px] px-[20px] pb-[10px]">
-        <View className="flex-row flex-wrap gap-[8px]">
-          {lesson.goals.map((goal) => (
-            <View
-              key={goal.id}
-              className="max-w-[260px] flex-row items-center gap-[4px] rounded-full bg-[#F4FBEF] px-[10px] py-[5px]">
-              <Ionicons name="checkmark-circle" size={12} color="#25C20F" />
-              <Text
-                className="font-lingua-semibold text-[11px] leading-[15px] text-[#3E8E2F]"
-                numberOfLines={1}>
-                {goal.text}
-              </Text>
-            </View>
-          ))}
-        </View>
-        <View className="flex-row items-center gap-[6px]">
-          <Ionicons name="sparkles" size={12} color="#6C4EF5" />
-          <Text
-            className="flex-1 font-lingua-regular text-[12px] leading-[16px] text-[#8790A8]"
-            numberOfLines={1}>
-            {lesson.aiTeacherPrompt.persona}
-          </Text>
-        </View>
-      </View>
-
       <View className="flex-1 px-[20px]">
         <View className="flex-1 overflow-hidden rounded-[28px]" style={styles.heroCard}>
           <Image
@@ -247,50 +225,63 @@ export function AudioLessonContent({ call, lesson, language }: AudioLessonConten
                 className="rounded-[22px] bg-white px-[18px] py-[14px]"
                 style={styles.bubbleShadow}
                 onPress={session.playCurrentPhrase}>
-                {session.showSubtitles ? (
-                  <View className="flex-row items-start justify-between gap-[12px]">
-                    <View className="flex-1">
-                      <Text className="font-lingua-bold text-[18px] leading-[25px] text-[#061032]">
-                        {currentPhrase.text}
-                      </Text>
-                      <Text className="mt-[2px] font-lingua-medium text-[15px] leading-[21px] text-[#69728F]">
-                        {currentPhrase.translation} 👏
-                      </Text>
-                    </View>
-                    <Animated.View style={{ transform: [{ scale: session.speakerScale }] }}>
-                      <Ionicons
-                        name={session.isSpeaking ? 'volume-high' : 'volume-medium-outline'}
-                        size={24}
-                        color="#6C4EF5"
-                      />
-                    </Animated.View>
-                  </View>
-                ) : (
-                  <View className="flex-row items-center gap-[10px]">
-                    <Animated.View style={{ transform: [{ scale: session.speakerScale }] }}>
-                      <Ionicons name="volume-high" size={20} color="#6C4EF5" />
-                    </Animated.View>
-                    <Text className="font-lingua-semibold text-[14px] leading-[19px] text-[#69728F]">
-                      Teacher is speaking…
+                <View className="flex-row items-start justify-between gap-[12px]">
+                  <View className="flex-1">
+                    <Text className="font-lingua-bold text-[18px] leading-[25px] text-[#061032]">
+                      {currentPhrase.text}
+                    </Text>
+                    <Text className="mt-[2px] font-lingua-medium text-[15px] leading-[21px] text-[#69728F]">
+                      {currentPhrase.translation} 👏
                     </Text>
                   </View>
-                )}
+                  <Animated.View style={{ transform: [{ scale: session.speakerScale }] }}>
+                    <Ionicons
+                      name={session.isSpeaking ? 'volume-high' : 'volume-medium-outline'}
+                      size={24}
+                      color="#6C4EF5"
+                    />
+                  </Animated.View>
+                </View>
               </Pressable>
             </View>
           ) : null}
         </View>
       </View>
 
+      {session.status === 'joined' ? (
+        <View className="px-[20px] pt-[14px]">
+          {latestCaption ? (
+            <View
+              className="flex-row items-start gap-[8px] rounded-[16px] bg-white px-[14px] py-[10px]"
+              style={styles.bubbleShadow}>
+              <View
+                className={`mt-[2px] rounded-full px-[8px] py-[3px] ${
+                  latestCaption.isTeacher ? 'bg-[#F6F4FF]' : 'bg-[#EAF3FF]'
+                }`}>
+                <Text
+                  className={`font-lingua-bold text-[10px] leading-[13px] ${
+                    latestCaption.isTeacher ? 'text-[#6C4EF5]' : 'text-[#2D7DFF]'
+                  }`}>
+                  {latestCaption.isTeacher ? 'AI Teacher' : 'You'}
+                </Text>
+              </View>
+              <Text className="flex-1 font-lingua-medium text-[14px] leading-[19px] text-[#061032]">
+                {latestCaption.text}
+              </Text>
+            </View>
+          ) : (
+            <View className="flex-row items-center gap-[8px] rounded-[16px] border border-dashed border-[#E3E6F0] px-[14px] py-[10px]">
+              <Ionicons name="mic-outline" size={16} color="#B7BED0" />
+              <Text className="flex-1 font-lingua-medium text-[13px] leading-[18px] text-[#B7BED0]">
+                Live captions will appear here
+              </Text>
+            </View>
+          )}
+        </View>
+      ) : null}
+
       {session.status === 'joined' || session.status === 'connecting' ? (
         <View className="flex-row items-center justify-evenly px-[16px] pt-[22px]">
-          <ControlButton
-            icon={session.isCameraOn ? 'videocam' : 'videocam-off'}
-            label="Camera"
-            active={session.isCameraOn}
-            tint={session.isCameraOn ? '#6C4EF5' : '#061032'}
-            background={session.isCameraOn ? '#F1EDFF' : '#F6F7FB'}
-            onPress={session.handleCameraPress}
-          />
           <ControlButton
             icon={session.isMuted ? 'mic-off' : 'mic'}
             label="Mic"
@@ -298,14 +289,6 @@ export function AudioLessonContent({ call, lesson, language }: AudioLessonConten
             tint={session.isMuted ? '#FF4D4F' : '#061032'}
             background={session.isMuted ? '#FFF1F0' : '#F6F7FB'}
             onPress={session.toggleMic}
-          />
-          <ControlButton
-            icon="language-outline"
-            label="Subtitles"
-            active={session.showSubtitles}
-            tint={session.showSubtitles ? '#6C4EF5' : '#061032'}
-            background={session.showSubtitles ? '#F1EDFF' : '#F6F7FB'}
-            onPress={session.toggleSubtitles}
           />
           <View className="items-center gap-[8px]">
             <Pressable
@@ -326,11 +309,16 @@ export function AudioLessonContent({ call, lesson, language }: AudioLessonConten
         {sessionFeedback.map((item, index) => (
           <View
             key={item.label}
-            className={`flex-1 items-center ${index !== 0 ? 'border-l border-[#EEF0F6]' : ''}`}>
-            <Text className="font-lingua-bold text-[15px] leading-[20px] text-[#061032]">
+            className={`flex-1 items-center px-[4px] ${index !== 0 ? 'border-l border-[#EEF0F6]' : ''}`}>
+            <Text
+              className="font-lingua-bold text-[12px] leading-[16px] text-[#061032]"
+              numberOfLines={1}>
               {item.label}
             </Text>
-            <Text className="mt-[4px] font-lingua-bold text-[15px] leading-[20px]" style={{ color: item.color }}>
+            <Text
+              className="mt-[4px] font-lingua-bold text-[15px] leading-[20px]"
+              numberOfLines={1}
+              style={{ color: item.color }}>
               {item.value}
             </Text>
           </View>

@@ -1,7 +1,7 @@
 # vision-agent
 
 Voice-only AI language teacher for the Kola Lingo app, built with
-[Vision Agents](https://visionagents.ai). Uses OpenAI Realtime as the LLM and
+[Vision Agents](https://visionagents.ai). Uses Gemini Realtime as the LLM and
 Stream Edge for transport. The teacher always speaks English and teaches the
 selected language through English.
 
@@ -9,9 +9,12 @@ selected language through English.
 
 1. Copy `.env.example` to `.env` and fill in the keys (reuse
    `STREAM_API_KEY`/`STREAM_API_SECRET` from the app's root `.env`, add your
-   own `OPENAI_API_KEY`). Set `AGENT_SERVICE_API_KEY` to the same value as
-   the Expo app's `AGENT_SERVICE_API_KEY` env var to require that shared
-   secret on the `serve` HTTP API; leave both unset for local dev.
+   own `GOOGLE_API_KEY` from https://aistudio.google.com/apikey — this is what
+   the live teacher's LLM uses). `OPENAI_API_KEY` is only needed to run
+   `tests/test_agent.py` (its `LLMJudge` uses `openai.LLM` to grade
+   responses), not for the live agent. Set `AGENT_SERVICE_API_KEY` to the
+   same value as the Expo app's `AGENT_SERVICE_API_KEY` env var to require
+   that shared secret on the `serve` HTTP API; leave both unset for local dev.
 2. Install dependencies:
 
    ```bash

@@ -9,6 +9,7 @@ dependencies = [
   "vision-agents",
   "vision-agents-plugins-openai",
   "vision-agents-plugins-getstream",
+  "vision-agents-plugins-gemini>=0.6.7",
 ]
 
 [dependency-groups]
